@@ -246,7 +246,7 @@ const char* pico_errmsg(int err) {
                  {LFS_ERR_NOATTR, "No data/attr available"},
                  {LFS_ERR_NAMETOOLONG, "File name too long"}};
 
-    for (int i = 0; i < sizeof(mesgs) / sizeof(mesgs[0]); i++)
+    for (size_t i = 0; i < sizeof(mesgs) / sizeof(mesgs[0]); i++)
         if (err == mesgs[i].err)
             return mesgs[i].text;
     return "Unknown error";
