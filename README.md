@@ -6,10 +6,58 @@ portion of its SPI flash. Adapted from the [little-fs ARM project](https://githu
 
 Pertinent define near the top of file lfs/pico_hal.c determines the size of the flash file system
 located to the top of flash.
+
 ```
 #define FS_SIZE (256 * 1024)
 ```
-Functions
+
+## Pico Multi-Core Support
+If your code is only running from a single core, checkout the git branch called
+"main" instead. The "multicore-lockout" branch is intended for programs where
+one core performs file system access and the other core does not.
+
+The Pico board's RP2040 chip normally uses XIP to run code directly from flash.
+Writing to flash while code is running from flash will cause undefined behavior.
+The `flash_range_erase()` and the `flash_range_program()` functions in the Pico
+SDK will run from on-chip SRAM. In a single-core program, that is sufficient.
+If both cores are running and using XIP, though, the core that is not using the
+file system needs to be completely halted with interrupts disabled before
+either of these `flash_range_` functions execute. The code in this git branch
+uses the Pico SDK's multicore\_lockout API to accomplish this. To use this API,
+you have to set up the core that does not do file access as a multicore\_lockout
+"victim." The following example show how to start up code with core 0 doing file
+access and core 1 not doing file access. The main program on core 1 is called
+`core1_main` and the main program on core 0 is just called main(). Blocks of
+code marked `<snip>` are omitted because they differ for every application.
+
+```
+// core1: handle host events
+void core1_main()
+{
+	// perform some initialization
+	<snip>
+
+    multicore_lockout_victim_init(); // need to lockout core 1 when core 0 writes to flash
+
+    // rest of the code in core1_main()
+	<snip>
+}
+
+int main()
+{
+	// perform some initialization
+	<snip>
+	
+    // Reset core 1 and launch core 1 program
+    multicore_reset_core1();    
+    multicore_launch_core1(core1_main);
+
+	// rest of the code in main() for core 0
+	<snip>
+```
+
+## Functions
+
 ```
 // Mounts a file system
 //
