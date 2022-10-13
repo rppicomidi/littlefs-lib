@@ -18,6 +18,7 @@
 #include "pico/time.h"
 
 #include "pico_hal.h"
+#include "pico/multicore.h"
 
 #define FS_SIZE (256 * 1024)
 
@@ -63,21 +64,35 @@ static int pico_hal_read(lfs_block_t block, lfs_off_t off, void* buffer, lfs_siz
 
 static int pico_hal_prog(lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size) {
     assert(block < pico_cfg.block_count);
+    assert(get_core_num() == 0);
     // program with SDK
     uint32_t p = (uint32_t)FS_BASE + (block * pico_cfg.block_size) + off;
+    while (!multicore_lockout_start_timeout_us(1000)) {
+        // wait for core 1 to lock out
+    }
     uint32_t ints = save_and_disable_interrupts();
     flash_range_program(p, buffer, size);
     restore_interrupts(ints);
+    while (!multicore_lockout_end_timeout_us(1000)) {
+        // wait for unlock to work
+    }
     return LFS_ERR_OK;
 }
 
 static int pico_hal_erase(lfs_block_t block) {
     assert(block < pico_cfg.block_count);
+    assert(get_core_num() == 0);
     // erase with SDK
     uint32_t p = (uint32_t)FS_BASE + block * pico_cfg.block_size;
+    while (!multicore_lockout_start_timeout_us(1000)) {
+        // wait for core 1 to lock out
+    }
     uint32_t ints = save_and_disable_interrupts();
     flash_range_erase(p, pico_cfg.block_size);
     restore_interrupts(ints);
+    while (!multicore_lockout_end_timeout_us(1000)) {
+        // wait for unlock to work
+    }
     return LFS_ERR_OK;
 }
 
