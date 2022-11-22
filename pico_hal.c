@@ -24,8 +24,11 @@
 static int pico_hal_read(lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size);
 static int pico_hal_prog(lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size);
 static int pico_hal_erase(lfs_block_t block);
+
+#if LIB_PICO_MULTICORE
 static int pico_lock(void);
 static int pico_unlock(void);
+#endif
 
 // configuration of the filesystem is provided by this struct
 // for Pico: prog size = 256, block size = 4096, so cache is 8K
@@ -231,7 +234,7 @@ const char* pico_errmsg(int err) {
                  {LFS_ERR_NOATTR, "No data/attr available"},
                  {LFS_ERR_NAMETOOLONG, "File name too long"}};
 
-    for (int i = 0; i < sizeof(mesgs) / sizeof(mesgs[0]); i++)
+    for (size_t i = 0; i < sizeof(mesgs) / sizeof(mesgs[0]); i++)
         if (err == mesgs[i].err)
             return mesgs[i].text;
     return "Unknown error";

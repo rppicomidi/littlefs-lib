@@ -3442,7 +3442,7 @@ static int lfs_rawformat(const struct lfs_config* cfg) {
     if (err) {
         return err;
     }
-    LFS_LOCK;
+    (void)LFS_LOCK;
 
     // create free lookahead
     memset(lfs.free.buffer, 0, lfs.cfg->lookahead_size);
@@ -3489,7 +3489,7 @@ static int lfs_rawformat(const struct lfs_config* cfg) {
     err = lfs_dir_fetch(&root, (const lfs_block_t[2]){0, 1});
 
 cleanup:
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     lfs_deinit();
     return err;
 }
@@ -3500,7 +3500,7 @@ static int lfs_rawmount(const struct lfs_config* cfg) {
     if (err) {
         return err;
     }
-    LFS_LOCK;
+    (void)LFS_LOCK;
     // scan directory blocks for superblock and any global updates
     lfs_mdir_t dir = {.tail = {0, 1}};
     lfs_block_t cycle = 0;
@@ -3608,12 +3608,12 @@ static int lfs_rawmount(const struct lfs_config* cfg) {
     // boots, we start the allocator at a random location
     lfs.free.off = lfs.seed % lfs.cfg->block_count;
     lfs_alloc_drop();
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return LFS_ERR_OK;
 
 cleanup:
     lfs_rawunmount();
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4106,7 +4106,7 @@ int lfs_remove(const char* path) {
     err = lfs_rawremove(path);
 
     LFS_TRACE("lfs_remove -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4122,7 +4122,7 @@ int lfs_rename(const char* oldpath, const char* newpath) {
     err = lfs_rawrename(oldpath, newpath);
 
     LFS_TRACE("lfs_rename -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4137,7 +4137,7 @@ int lfs_stat(const char* path, struct lfs_info* info) {
     err = lfs_rawstat(path, info);
 
     LFS_TRACE("lfs_stat -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4152,7 +4152,7 @@ lfs_ssize_t lfs_getattr(const char* path, uint8_t type, void* buffer, lfs_size_t
     lfs_ssize_t res = lfs_rawgetattr(path, type, buffer, size);
 
     LFS_TRACE("lfs_getattr -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4168,7 +4168,7 @@ int lfs_setattr(const char* path, uint8_t type, const void* buffer, lfs_size_t s
     err = lfs_rawsetattr(path, type, buffer, size);
 
     LFS_TRACE("lfs_setattr -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4184,7 +4184,7 @@ int lfs_removeattr(const char* path, uint8_t type) {
     err = lfs_rawremoveattr(path, type);
 
     LFS_TRACE("lfs_removeattr -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4201,7 +4201,7 @@ int lfs_file_open(lfs_file_t* file, const char* path, int flags) {
     err = lfs_file_rawopen(file, path, flags);
 
     LFS_TRACE("lfs_file_open -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4220,7 +4220,7 @@ int lfs_file_opencfg(lfs_file_t* file, const char* path, int flags,
     err = lfs_file_rawopencfg(file, path, flags, cfg);
 
     LFS_TRACE("lfs_file_opencfg -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4235,7 +4235,7 @@ int lfs_file_close(lfs_file_t* file) {
     err = lfs_file_rawclose(file);
 
     LFS_TRACE("lfs_file_close -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4251,7 +4251,7 @@ int lfs_file_sync(lfs_file_t* file) {
     err = lfs_file_rawsync(file);
 
     LFS_TRACE("lfs_file_sync -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4268,7 +4268,7 @@ lfs_ssize_t lfs_file_read(lfs_file_t* file, void* buffer, lfs_size_t size) {
     lfs_ssize_t res = lfs_file_rawread(file, buffer, size);
 
     LFS_TRACE("lfs_file_read -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4285,7 +4285,7 @@ lfs_ssize_t lfs_file_write(lfs_file_t* file, const void* buffer, lfs_size_t size
     lfs_ssize_t res = lfs_file_rawwrite(file, buffer, size);
 
     LFS_TRACE("lfs_file_write -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 #endif
@@ -4302,7 +4302,7 @@ lfs_soff_t lfs_file_seek(lfs_file_t* file, lfs_soff_t off, int whence) {
     lfs_soff_t res = lfs_file_rawseek(file, off, whence);
 
     LFS_TRACE("lfs_file_seek -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4319,7 +4319,7 @@ int lfs_file_truncate(lfs_file_t* file, lfs_off_t size) {
     err = lfs_file_rawtruncate(file, size);
 
     LFS_TRACE("lfs_file_truncate -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4335,7 +4335,7 @@ lfs_soff_t lfs_file_tell(lfs_file_t* file) {
     lfs_soff_t res = lfs_file_rawtell(file);
 
     LFS_TRACE("lfs_file_tell -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4349,7 +4349,7 @@ int lfs_file_rewind(lfs_file_t* file) {
     err = lfs_file_rawrewind(file);
 
     LFS_TRACE("lfs_file_rewind -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4364,7 +4364,7 @@ lfs_soff_t lfs_file_size(lfs_file_t* file) {
     lfs_soff_t res = lfs_file_rawsize(file);
 
     LFS_TRACE("lfs_file_size -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4379,7 +4379,7 @@ int lfs_mkdir(const char* path) {
     err = lfs_rawmkdir(path);
 
     LFS_TRACE("lfs_mkdir -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 #endif
@@ -4395,7 +4395,7 @@ int lfs_dir_open(lfs_dir_t* dir, const char* path) {
     err = lfs_dir_rawopen(dir, path);
 
     LFS_TRACE("lfs_dir_open -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4409,7 +4409,7 @@ int lfs_dir_close(lfs_dir_t* dir) {
     err = lfs_dir_rawclose(dir);
 
     LFS_TRACE("lfs_dir_close -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4424,7 +4424,7 @@ int lfs_dir_read(lfs_dir_t* dir, struct lfs_info* info) {
     err = lfs_dir_rawread(dir, info);
 
     LFS_TRACE("lfs_dir_read -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4439,7 +4439,7 @@ int lfs_dir_seek(lfs_dir_t* dir, lfs_off_t off) {
     err = lfs_dir_rawseek(dir, off);
 
     LFS_TRACE("lfs_dir_seek -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4453,7 +4453,7 @@ lfs_soff_t lfs_dir_tell(lfs_dir_t* dir) {
     lfs_soff_t res = lfs_dir_rawtell(dir);
 
     LFS_TRACE("lfs_dir_tell -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4467,7 +4467,7 @@ int lfs_dir_rewind(lfs_dir_t* dir) {
     err = lfs_dir_rawrewind(dir);
 
     LFS_TRACE("lfs_dir_rewind -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
@@ -4481,7 +4481,7 @@ lfs_ssize_t lfs_fs_size(void) {
     lfs_ssize_t res = lfs_fs_rawsize();
 
     LFS_TRACE("lfs_fs_size -> %"PRId32, res);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return res;
 }
 
@@ -4496,7 +4496,7 @@ int lfs_fs_traverse(int (*cb)(void*, lfs_block_t), void* data) {
     err = lfs_fs_rawtraverse(cb, data, true);
 
     LFS_TRACE("lfs_fs_traverse -> %d", err);
-    LFS_UNLOCK;
+    (void)LFS_UNLOCK;
     return err;
 }
 
