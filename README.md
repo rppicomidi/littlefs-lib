@@ -4,12 +4,33 @@ To be included as project submodule.
 A small C/C++ Posix like journaling file system for the Raspberry Pico using a size configurable
 portion of its SPI flash. Adapted from the [little-fs ARM project](https://github.com/littlefs-project/littlefs.git).
 
-Pertinent define near the top of file lfs/pico_hal.c determines the size of the flash file system
+Pertinent define near the top of file `pico_hal.c` determines the size of the flash file system
 located to the top of flash.
 
 ```
-#define FS_SIZE (256 * 1024)
+#define FS_SIZE ((256 * 1024) - (FS_RESERVE_AT_END))
 ```
+## Pico W Support
+If you use the Pico W for Bluetooth, the bonded device list is stored in the
+Pico W board's 2M flash chip at the end of flash memory. This will conflict
+with the flash memory pico-littlefs uses for non-volatile storage. To avoid
+the conflict, the file `pico_hal.c` contains some preprocessor defines as follows:
+```
+#if defined(RPPICOMIDI_PICO_W) && RPPICOMIDI_PICO_W
+// <snip comments>
+#define FS_RESERVE_AT_END ((FLASH_SECTOR_SIZE)*2)
+#else
+#define FS_RESERVE_AT_END 0
+#endif
+#define FS_SIZE ((256 * 1024) - (FS_RESERVE_AT_END))
+```
+
+Make sure to add
+```
+RPPICOMIDI_PICO_W=1
+```
+to the `target_compile_definitions` in your project's `CMakeLists.txt`.
+For more details, see the comments in `pico_hal.c`.
 
 ## Pico Multi-Core Support
 If your code is only running from a single core, checkout the git branch called

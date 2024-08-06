@@ -20,7 +20,23 @@
 #include "pico_hal.h"
 #include "pico/multicore.h"
 
-#define FS_SIZE (256 * 1024)
+#if defined(RPPICOMIDI_PICO_W) && RPPICOMIDI_PICO_W
+// The Bluetooth stack on the Pico W (btstack) requires some
+// flash for storing the bonded device list. Like
+// littlefs, the btstack locates the storage for the
+// database at the end of the program flash. It is usually
+// only 8Kbytes.
+// See function pico_flash_bank_get_fixed_storage_offset()
+// found in ${PICO_SDK_PATH}/src/rp2_common/pico_btstack/btstack_flash_bank.c
+// Note that if you use the preprocessor to define the
+// symbol pico_flash_bank_get_storage_offset_func as a macro,
+// then you may have to re-examine this value as well.
+//
+#define FS_RESERVE_AT_END ((FLASH_SECTOR_SIZE)*2)
+#else
+#define FS_RESERVE_AT_END 0
+#endif
+#define FS_SIZE ((256 * 1024) - (FS_RESERVE_AT_END))
 
 static int pico_hal_read(lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size);
 static int pico_hal_prog(lfs_block_t block, lfs_off_t off, const void* buffer, lfs_size_t size);
@@ -52,7 +68,7 @@ struct lfs_config pico_cfg = {
 // Pico specific hardware abstraction functions
 
 // file system offset in flash
-const char* FS_BASE = (char*)(PICO_FLASH_SIZE_BYTES - FS_SIZE);
+const char* FS_BASE = (char*)((PICO_FLASH_SIZE_BYTES) - ((FS_SIZE) + (FS_RESERVE_AT_END)));
 
 static int pico_hal_read(lfs_block_t block, lfs_off_t off, void* buffer, lfs_size_t size) {
     assert(block < pico_cfg.block_count);
